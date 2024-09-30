@@ -18,7 +18,7 @@ const (
 )
 
 // Initialize MySQL Connection
-func InitDB() {
+func ConnectDD() {
 	// MySQL connection string: user:password@tcp(host:port)/dbname
 	dsn := ("%s:%s@tcp(%s)/%s", username, password, hostname, dbName)
 
@@ -35,4 +35,10 @@ func InitDB() {
 		log.Fatal("Error connecting to the database: ", err)
 	}
 	fmt.Println("Successfully connected to the MySQL database!")
+}
+func GetDB() *sql.DB {
+	if DB == nil {
+		ConnectDB()
+	}
+	return DB
 }
