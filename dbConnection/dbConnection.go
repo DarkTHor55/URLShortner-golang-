@@ -1,6 +1,4 @@
-
-
-package main
+package dbConnection
 
 import (
 	"database/sql"
@@ -18,7 +16,7 @@ const (
 )
 
 // Initialize MySQL Connection
-func ConnectDD() {
+func ConnectDB() {
 	// MySQL connection string: user:password@tcp(host:port)/dbname
 	dsn := ("%s:%s@tcp(%s)/%s", username, password, hostname, dbName)
 

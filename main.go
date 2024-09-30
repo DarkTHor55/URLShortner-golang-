@@ -5,14 +5,11 @@ import (
 	"time"
 	"crypto/md5"
 	"encoding/hex"
+	"url-shortner/models"
+	"url-shortner/dbConnection"
+
 )
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-type URL struct{
-	ID string `json:"id"`
-	OrignalURL string `json:"orignal_url"`
-	CreationURL string `json:"creation_url"`
-	CurrentDate time.Time `json:"current_date"`
-}
+
 
 var urlDb = make(map[string]URL)
 func genrateShortUrl(OrignalURL string)string {
@@ -34,14 +31,36 @@ func genrateShortUrl(OrignalURL string)string {
 
 }
 
-func createUrl(OrignalURL string){
+func createUrl(OrignalURL string)(*models.URL, error){
 	shortURL := genrateShortUrl(OrignalURL)
-	
+
+	newURL := &models.URL{
+		OriginalURL: originalURL,
+		CreationURL: shortURL,
+		CurrentDate: time.Now(),
+	}
+	if _, err := newURL.CreateUrl(); err != nil {
+		return nil, err // Return an error if the insertion fails
+	}
+
+	return newURL, nil
 }
 
 func main() {
-	fmt.Println("Starting url shortener...")
-	str :="https://chatgpt.com/c/66faa9e0-b018-800c-84d7-e8ba5ac41dba"
-	shortURL:=genrateShortUrl(str)
-	fmt.Println("Generated short URL:", shortURL)
+	dbConnection.ConnectDB()
+
+	fmt.Println("Starting URL shortener...")
+
+	// Example original URL
+	originalURL := "https://chatgpt.com/c/66faa9e0-b018-800c-84d7-e8ba5ac41dba"
+
+	// Create the short URL and save it in the database
+	newURL, err := createUrl(originalURL)
+	if err != nil {
+		fmt.Println("Error creating short URL:", err)
+		return
+	}
+
+	fmt.Println("Original URL:", newURL.OriginalURL)
+	fmt.Println("Generated short URL:", newURL.CreationURL)
 }
