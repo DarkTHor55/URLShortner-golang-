@@ -1,12 +1,13 @@
 package dbConnection
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
-	_ "github.com/go-sql-driver/mysql"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
-var DB *sql.DB
+
+var DB *gorm.DB
 
 const (
 	username = "root"
@@ -17,24 +18,29 @@ const (
 
 // Initialize MySQL Connection
 func ConnectDB() {
-	// MySQL connection string: user:password@tcp(host:port)/dbname
-	dsn := ("%s:%s@tcp(%s)/%s", username, password, hostname, dbName)
+	// MySQL connection string
+	dsn := username + ":" + password + "@tcp(" + hostname + ")/" + dbname + "?charset=utf8&parseTime=True&loc=Local"
 
 	// Open the connection
 	var err error
-	DB, err = sql.Open("mysql", dsn)
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Error opening the database: ", err)
 	}
 
-	// Check if the connection is available
-	err = DB.Ping()
+	// Confirm connection
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Fatal("Error getting database: ", err)
+	}
+	err = sqlDB.Ping()
 	if err != nil {
 		log.Fatal("Error connecting to the database: ", err)
 	}
-	fmt.Println("Successfully connected to the MySQL database!")
+	log.Println("Successfully connected to the MySQL database!")
 }
-func GetDB() *sql.DB {
+
+func GetDB() *gorm.DB {
 	if DB == nil {
 		ConnectDB()
 	}
