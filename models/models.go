@@ -4,11 +4,10 @@ import (
 	"time"
 	"url-shortner/dbConnection"
 	"gorm.io/gorm"
-	"github.com/google/uuid"
 )
 
 type URL struct {
-	ID          string    `gorm:"primaryKey;type:char(36);not null" json:"id"` 
+	ID          string    `gorm:"primaryKey;type:varchar(255);not null" json:"id"` 
 	OriginalURL string    `gorm:"type:text;not null" json:"original_url"`
 	CreationURL string    `gorm:"type:varchar(255);not null" json:"creation_url"`
 	CurrentDate time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"current_date"`
@@ -23,8 +22,11 @@ func init() {
 	}
 }
 
+// BeforeCreate is called before a new URL is created.
+// It sets the ID to be the same as CreationURL.
 func (url *URL) BeforeCreate(tx *gorm.DB) (err error) {
-	url.ID = uuid.New().String()
+	// The ID will be set to the CreationURL value before creating the record
+	url.ID = url.CreationURL
 	return nil
 }
 
@@ -45,10 +47,11 @@ func GetAllURL() ([]URL, error) {
 	return urls, nil
 }
 
-func (url *URL) GetURLByID(id string) (*URL, error) {
+// GetURLByID now retrieves the URL based on the CreationURL.
+func (url *URL) GetURLByID(shortURL string) (*URL, error) {
 	db := dbConnection.GetDB()
 	var retrievedURL URL
-	result := db.Where("id = ?", id).First(&retrievedURL)
+	result := db.Where("creation_url = ?", shortURL).First(&retrievedURL)
 	if result.Error != nil {
 		return nil, result.Error
 	}

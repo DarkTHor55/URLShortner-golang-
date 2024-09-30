@@ -5,8 +5,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"time"
+	"net/http"
 	"url-shortner/models"
 	"url-shortner/dbConnection"
+	"url-shortner/router"
 )
 
 func generateShortUrl(originalURL string) string {
@@ -28,6 +30,7 @@ func createUrl(originalURL string) (*models.URL, error) {
 	shortURL := generateShortUrl(originalURL)
 
 	newURL := &models.URL{
+		ID:shortURL,
 		OriginalURL: originalURL,
 		CreationURL: shortURL,
 		CurrentDate: time.Now(),
@@ -40,20 +43,30 @@ func createUrl(originalURL string) (*models.URL, error) {
 	return newURL, nil
 }
 
+
 func main() {
-	dbConnection.ConnectDB()
+	// Initialize database connection
+	dbConnection.ConnectDB() // No need for an error check since it doesn't return a value
 
 	fmt.Println("Starting URL shortener...")
 
-	originalURL := "https://chatgpt.com/c/66faa9e0-b018-800c-84d7-e8ba5ac41dba"
+	// Generate a short URL for an example original URL
+	originalURL := "https://chatgpt.com/c/66faa9e0-b018800c-84d7-e8ba5ac41dba"
 
-	// Create the short URL and save it in the database
+	// Create and store the short URL in the database
 	newURL, err := createUrl(originalURL)
 	if err != nil {
 		fmt.Println("Error creating short URL:", err)
 		return
 	}
 
+	// Output the original and short URLs
 	fmt.Println("Original URL:", newURL.OriginalURL)
 	fmt.Println("Generated short URL:", newURL.CreationURL)
+
+	// Setup router and start the HTTP server
+	r := router.SetupRouter()
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		fmt.Println("Error starting server:", err)
+	}
 }
